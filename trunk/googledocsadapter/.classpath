@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="GoogleDocsAdapter"/>
+	<classpathentry kind="src" path="Lib"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-core-1.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-docs-3.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-client-meta-1.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-docs-meta-3.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-media-1.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/java/lib/gdata-client-1.0.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/GoogleDataExtDependencies/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/gdata/GoogleDataExtDependencies/mail-1.4.1.jar"/>
+	<classpathentry kind="lib" path="/Volumes/local/online/Programmierung/Java/MyLibraries/3rdParty/google-collect-1.0/google-collect-1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
