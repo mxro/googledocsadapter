@@ -30,6 +30,7 @@ public class GoogleDocsAdapter {
 	final DocsService client;
 	final String username;
 	final String password;
+	
 
 	public DocumentListEntry uploadFile(String filepath, String title)
 	throws IOException, ServiceException  {
