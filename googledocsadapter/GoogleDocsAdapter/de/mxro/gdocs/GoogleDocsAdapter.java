@@ -3,7 +3,6 @@ package de.mxro.gdocs;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -11,7 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import com.google.gdata.client.DocumentQuery;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.MediaContent;
 import com.google.gdata.data.PlainTextConstruct;
@@ -22,14 +20,17 @@ import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
-import de.mxro.filesystem.v01.IncludedFile;
 import de.mxro.string.filter.Filter;
+import java.util.LinkedList;
 
 public class GoogleDocsAdapter {
 
 	final DocsService client;
 	final String username;
 	final String password;
+    public List<DocumentListEntry> cachedList;
+
+
 	
 
 	public DocumentListEntry uploadFile(String filepath, String title)
@@ -69,6 +70,18 @@ public class GoogleDocsAdapter {
 		System.out.println(onlyBody);*/
 		return onlyBody;
 	}
+    
+    public DocumentListEntry getDocumentEntry(String documentID) {
+       List<DocumentListEntry> list = getDocumentList();
+       for (DocumentListEntry e : list) {
+           if (e.getDocId().equals(documentID)) {
+               return e;
+           }
+       }
+       return null;
+    }
+    
+    
 
 	public DocumentListEntry updateDocument(DocumentListEntry entry, String newContent) {
 		try {
@@ -77,7 +90,7 @@ public class GoogleDocsAdapter {
 
 			entry.setMediaSource(source);
 			entry.setWritersCanInvite(false);
-
+            entry.setEtag("*");
 
 			return entry.updateMedia(true);
 
@@ -102,7 +115,15 @@ public class GoogleDocsAdapter {
 
 		MediaContent mc = new MediaContent();
 		mc.setUri(exportUrl);
-		MediaSource ms = client.getMedia(mc);
+		MediaSource ms;
+        try {
+         ms = client.getMedia(mc);
+
+
+        } catch (com.google.gdata.util.ResourceNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
 
 		InputStream inStream = null;
 		ByteArrayOutputStream outStream= null;
@@ -136,22 +157,24 @@ public class GoogleDocsAdapter {
 	throws IOException, MalformedURLException, ServiceException {
 		String docId = resourceId.substring(resourceId.lastIndexOf(":") + 1);
 
+       String kind = resourceId.substring(0,resourceId.lastIndexOf(":"));
+       System.out.println(docId + ":"+kind);
 
+       if (!kind.equals("document")) return null;
+       
 		String exportUrl = "https://docs.google.com/feeds/download/documents/Export?docId=" +
 		docId + "&exportFormat=" + format;
 		return downloadDocumentContent(exportUrl);
 	}
 
 
+    public GoogleDocsAdapter setDocumentsList(List<DocumentListEntry> list) {
+        this.cachedList = list;
+        return this;
+    }
 
-
-
-	/**
-	 * Returns list of Documents in Google Docs
-	 * @return
-	 */
-	public List<DocumentListEntry> getDocumentList() {
-		try {
+    public GoogleDocsAdapter loadDocumentsList() {
+        try {
 
 			// Create a new Documents service
 
@@ -162,7 +185,14 @@ public class GoogleDocsAdapter {
 			DocumentListFeed resultFeed = client.getFeed(metafeedUrl, DocumentListFeed.class);
 			List<DocumentListEntry> entries = resultFeed.getEntries();
 
-			return entries;
+            LinkedList<DocumentListEntry> list = new  LinkedList<DocumentListEntry>();
+            for (DocumentListEntry e : entries) {
+                if (e.getType().equals("document")){
+                    list.add(e);
+                }
+            }
+
+			this.cachedList = list;
 		}
 		catch(AuthenticationException e) {
 			e.printStackTrace();
@@ -176,8 +206,20 @@ public class GoogleDocsAdapter {
 		catch(IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return this;
+    }
+
+
+	/**
+	 * Returns list of Documents in Google Docs
+	 * @return
+	 */
+	public List<DocumentListEntry> getDocumentList() {
+		if (this.cachedList == null) loadDocumentsList();
+        return this.cachedList;
 	}
+
+    public boolean connected;
 
 	public GoogleDocsAdapter(String username, String password) {
 		super();
@@ -186,8 +228,9 @@ public class GoogleDocsAdapter {
 		client = new DocsService("GoogleDocumentsAdapter-0.1");
 		try {
 			client.setUserCredentials(username,password);
+            connected = true;
 		} catch (AuthenticationException e) {
-
+            connected = false;
 			e.printStackTrace();
 		}
 	}
