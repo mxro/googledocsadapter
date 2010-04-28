@@ -19,18 +19,21 @@ public class GoogleDocsFileHandler implements FileHandler {
 	public String uploadFile(File file) {
 		try {
 			DocumentListEntry entry = adapter.uploadFile(file.getAbsolutePath(), file.getName());
+            try {
+
 			
-			String html = adapter.downloadDocument(entry.getDocId(), "html");
+			String html = adapter.downloadDocument("document:"+entry.getDocId(), "html");
 			if (html == null) return null;
 			// <img src=dgbrkvpg_103g8w4g7hc_b.jpg><br></body>
 			
 			String imageName = Filter.regExBetween("<img src=", "><br></body>", Filter.identity).perform(html);
 			String imageWithoutExtension = de.mxro.Utils.removeExtension(imageName);
 			String imageURL = "http://docs.google.com/File?id="+imageWithoutExtension;
-			
-			
-			entry.delete();
 			return imageURL;
+            } finally {
+			  entry.delete();
+            }
+			
 			
 		} catch (IOException e) {
 			

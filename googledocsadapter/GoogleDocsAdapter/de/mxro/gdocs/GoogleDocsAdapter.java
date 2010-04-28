@@ -13,8 +13,11 @@ import java.util.List;
 import com.google.gdata.client.docs.DocsService;
 import com.google.gdata.data.MediaContent;
 import com.google.gdata.data.PlainTextConstruct;
+import com.google.gdata.data.docs.DocumentEntry;
 import com.google.gdata.data.docs.DocumentListEntry;
 import com.google.gdata.data.docs.DocumentListFeed;
+import com.google.gdata.data.docs.PresentationEntry;
+import com.google.gdata.data.docs.SpreadsheetEntry;
 import com.google.gdata.data.media.MediaByteArraySource;
 import com.google.gdata.data.media.MediaSource;
 import com.google.gdata.util.AuthenticationException;
@@ -22,6 +25,8 @@ import com.google.gdata.util.ServiceException;
 
 import de.mxro.string.filter.Filter;
 import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GoogleDocsAdapter {
 
@@ -168,6 +173,18 @@ public class GoogleDocsAdapter {
 	}
 
 
+    public boolean trashDocument(DocumentListEntry entry) {
+        try {
+            client.delete(new URL(entry.getEditLink().getHref()), entry.getEtag());
+            return true;
+        } catch (IOException ex) {
+            Logger.getLogger(GoogleDocsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ServiceException ex) {
+            Logger.getLogger(GoogleDocsAdapter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
     public GoogleDocsAdapter setDocumentsList(List<DocumentListEntry> list) {
         this.cachedList = list;
         return this;
@@ -219,6 +236,40 @@ public class GoogleDocsAdapter {
         return this.cachedList;
 	}
 
+
+
+
+
+    public DocumentListEntry createNewDocument(String title, String type)
+    throws IOException, ServiceException {
+  DocumentListEntry newEntry = null;
+  if (type.equals("document")) {
+    newEntry = new DocumentEntry();
+  } else if (type.equals("presentation")) {
+    newEntry = new PresentationEntry();
+  } else if (type.equals("spreadsheet")) {
+    newEntry = new SpreadsheetEntry();
+  }
+  newEntry.setTitle(new PlainTextConstruct(title));
+
+  // Prevent collaborators from sharing the document with others?
+  // newEntry.setWritersCanInvite(false);
+
+  // You can also hide the document on creation
+  // newEntry.setHidden(true);
+
+  return client.insert(new URL("https://docs.google.com/feeds/default/private/full/"), newEntry);
+}
+
+
+ public DocumentListEntry createNewDocument(DocumentListEntry entry)
+    throws IOException, ServiceException {
+
+
+       return client.insert(new URL("https://docs.google.com/feeds/default/private/full/"), entry);
+}
+
+
     public boolean connected;
 
 	public GoogleDocsAdapter(String username, String password) {
@@ -235,5 +286,9 @@ public class GoogleDocsAdapter {
 		}
 	}
 
+    public static void main(String[] args) throws IOException, ServiceException {
+       
+
+    }
 
 }
