@@ -1,0 +1,2 @@
+- allows to download/upload google documents as string
+- allows to upload pictures to google docs
